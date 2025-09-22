@@ -1,43 +1,37 @@
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use anyhow::Result;
+use lazy_static::lazy_static;
+
+#[cfg(not(test))]
 use std::env;
 
-pub async fn init_db() -> anyhow::Result<PgPool> {
-    let db_url = env::var("GROUP_DATABASE_URL")?;
-    let max_connections = env::var("DB_MAX_CONNECTIONS")
-        .unwrap_or_else(|_| "5".into())
-        .parse::<u32>()?;
-    let timeout = env::var("DB_POOL_TIMEOUT_SECS")
-        .unwrap_or_else(|_| "10".into())
-        .parse::<u64>()?;
+lazy_static! {
+    pub static ref GLOBAL_CONFIG: Config = {
+        // TODO(Sa4dUs): How should we handle this `Result`?
+        Config::load().unwrap()
+    };
+}
 
-    let pool = PgPoolOptions::new()
-        .max_connections(max_connections)
-        .acquire_timeout(std::time::Duration::from_secs(timeout))
-        .connect(&db_url)
-        .await?;
+pub struct Config {
+    pub db_url: String,
+}
 
-    sqlx::query(
-        "CREATE TABLE IF NOT EXISTS groups (
-                id UUID PRIMARY KEY,
-                owner_id UUID NOT NULL,
-                channel_id UUID NOT NULL,
-                created_at TIMESTAMP DEFAULT now()
-            );
-",
-    )
-    .execute(&pool)
-    .await?;
+impl Config {
+    pub fn load() -> Result<Self> {
+        #[cfg(test)]
+        return Self::load_test();
+        #[cfg(not(test))]
+        return Self::load_prod();
+    }
 
-    sqlx::query(
-        "CREATE TABLE IF NOT EXISTS group_members (
-                group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
-                user_id UUID NOT NULL,
-                PRIMARY KEY (group_id, user_id)
-            );
-",
-    )
-    .execute(&pool)
-    .await?;
+    #[cfg(test)]
+    fn load_test() -> Result<Self> {
+        let db_url = "postgres://postgres:password@group-db:5432/groupdb".to_string();
+        Ok(Config { db_url })
+    }
 
-    Ok(pool)
+    #[cfg(not(test))]
+    fn load_prod() -> Result<Self> {
+        let db_url = env::var("GROUP_DATABASE_URL")?;
+        Ok(Config { db_url })
+    }
 }

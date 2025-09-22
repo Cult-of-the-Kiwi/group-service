@@ -4,7 +4,7 @@
 
 ## 1. Create Group
 
-**POST** `/create`
+**POST** `/groups`
 
 **Headers:**
 
@@ -14,6 +14,7 @@
 
 ```json
 {
+    "name": "group-name",
 	"member_ids": ["uuid-1", "uuid-2"]
 }
 ```
@@ -27,6 +28,46 @@
 -   `400 Bad Request` — If `member_ids` is empty.
 -   `401 Unauthorized` — If JWT is missing or invalid.
 -   `500 Internal Server Error` — On database or server error.
+
+---
+
+## 2. List User Groups
+
+**GET** `/groups`
+
+**Headers:**
+
+-   `Authorization: Bearer <JWT>`
+
+**Query Parameters:**
+
+-   `from` (optional, integer): Start index (inclusive, default: 0).
+-   `to` (optional, integer): End index (exclusive, default: 10).
+
+**Responses:**
+
+-   `200 OK`
+    ```json
+    [
+    	{
+    		"id": "uuid",
+            "name": "group-name",
+    		"owner_id": "uuid",
+    		"channel_id": "uuid",
+    		"created_at": "2025-07-29T12:34:56"
+    	}
+    ]
+    ```
+-   `401 Unauthorized` — If JWT is missing or invalid.
+-   `500 Internal Server Error` — On database or server error.
+
+---
+
+**General Notes:**
+
+-   All endpoints require a valid JWT in the `Authorization` header.
+-   All UUIDs must be valid.
+-   All error responses return a plain message or empty body, depending on the status
 
 ---
 
@@ -109,45 +150,6 @@
 -   `403 Forbidden` — If requester is not the group owner.
 -   `404 Not Found` — If group does not exist.
 -   `500 Internal Server Error` — On database or server error.
-
----
-
-## 5. List User Groups
-
-**GET** `/user-groups`
-
-**Headers:**
-
--   `Authorization: Bearer <JWT>`
-
-**Query Parameters:**
-
--   `from` (optional, integer): Start index (inclusive, default: 0).
--   `to` (optional, integer): End index (exclusive, default: 10).
-
-**Responses:**
-
--   `200 OK`
-    ```json
-    [
-    	{
-    		"id": "uuid",
-    		"owner_id": "uuid",
-    		"channel_id": "uuid",
-    		"created_at": "2025-07-29T12:34:56"
-    	}
-    ]
-    ```
--   `401 Unauthorized` — If JWT is missing or invalid.
--   `500 Internal Server Error` — On database or server error.
-
----
-
-**General Notes:**
-
--   All endpoints require a valid JWT in the `Authorization` header.
--   All UUIDs must be valid.
--   All error responses return a plain message or empty body, depending on the status
 
 ---
 
