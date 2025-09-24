@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS groups (
     id UUID PRIMARY KEY,
-    name STRING NOT NULL;
+    name TEXT NOT NULL,
     owner_id UUID NOT NULL,
     channel_id UUID NOT NULL,
     created_at TIMESTAMP DEFAULT now()

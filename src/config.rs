@@ -1,37 +1,49 @@
 use anyhow::Result;
-use lazy_static::lazy_static;
+use std::sync::Arc;
+use tokio::sync::OnceCell;
 
-#[cfg(not(test))]
-use std::env;
-
-lazy_static! {
-    pub static ref GLOBAL_CONFIG: Config = {
-        // TODO(Sa4dUs): How should we handle this `Result`?
-        Config::load().unwrap()
-    };
-}
-
+#[derive(Clone)]
 pub struct Config {
     pub db_url: String,
 }
 
+static GLOBAL_CONFIG: OnceCell<Arc<Config>> = OnceCell::const_new();
+
 impl Config {
-    pub fn load() -> Result<Self> {
+    pub async fn get(config: Option<Config>) -> Arc<Config> {
+        GLOBAL_CONFIG
+            .get_or_init(|| async {
+                Arc::new(Config::load(config).expect("Failed to load Config"))
+            })
+            .await
+            .clone()
+    }
+
+    pub fn load(config: Option<Config>) -> Result<Self> {
+        if let Some(cfg) = config {
+            return Ok(cfg);
+        }
+
         #[cfg(test)]
         return Self::load_test();
+
         #[cfg(not(test))]
         return Self::load_prod();
     }
 
     #[cfg(test)]
     fn load_test() -> Result<Self> {
-        let db_url = "postgres://postgres:password@group-db:5432/groupdb".to_string();
-        Ok(Config { db_url })
+        Ok(Config {
+            db_url: "postgres://postgres:password@127.0.0.1:5432/groupdb".to_string(),
+        })
     }
 
     #[cfg(not(test))]
     fn load_prod() -> Result<Self> {
-        let db_url = env::var("GROUP_DATABASE_URL")?;
-        Ok(Config { db_url })
+        Ok(Config {
+            db_url: std::env::var("GROUP_DATABASE_URL").unwrap_or_else(|_| {
+                "postgres://postgres:password@127.0.0.1:5432/groupdb".to_string()
+            }),
+        })
     }
 }

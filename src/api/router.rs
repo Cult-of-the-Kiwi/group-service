@@ -20,10 +20,11 @@ use crate::{
 // FIXME(Sa4dUs): Move this away
 pub type SharedService = Arc<dyn GroupService + Send + Sync + 'static>;
 
+#[derive(Clone)]
 pub struct AppState {
     pub service: SharedService,
 }
-pub type SharedState = Arc<AppState>;
+pub type SharedState = AppState;
 
 pub fn build(state: SharedState) -> Router {
     Router::new()

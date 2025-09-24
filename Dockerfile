@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 
 COPY ./Cargo.toml ./Cargo.lock ./
 COPY ./src ./src
+COPY ./migrations ./migrations
 
 ARG BUILD_MODE=release
 

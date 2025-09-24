@@ -14,7 +14,7 @@
 
 ```json
 {
-    "name": "group-name",
+	"name": "group-name",
 	"member_ids": ["uuid-1", "uuid-2"]
 }
 ```
@@ -51,7 +51,7 @@
     [
     	{
     		"id": "uuid",
-            "name": "group-name",
+    		"name": "group-name",
     		"owner_id": "uuid",
     		"channel_id": "uuid",
     		"created_at": "2025-07-29T12:34:56"
