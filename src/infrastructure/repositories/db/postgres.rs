@@ -50,4 +50,8 @@ impl GroupRepository for PgPool {
             .map_err(|_| InfraError::GenericError)?;
         Ok(())
     }
+
+    async fn get_groups_by_user(&self, user_id: uuid::Uuid) -> Result<Vec<GroupInfo>, InfraError> {
+        todo!()
+    }
 }

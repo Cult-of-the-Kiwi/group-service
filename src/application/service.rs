@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::{
     api::error::HandlerError,
     application::{bus::EventBus, dto::GroupInfo, error::AppError},
-    domain::repositories::group_repository::GroupRepository,
+    domain::{models::group, repositories::group_repository::GroupRepository},
 };
 
 #[async_trait]
@@ -75,7 +75,13 @@ impl GroupService for GroupServiceImpl {
     }
 
     async fn get_user_groups(&self, user_id: Uuid) -> Result<Vec<GroupInfo>, AppError> {
-        todo!()
+        let group_info = self
+            .repo
+            .get_groups_by_user(user_id)
+            .await
+            .map_err(|e| AppError::InfraError(e))?;
+
+        Ok(group_info)
     }
 
     async fn get_group(&self, user_id: Uuid, group_id: Uuid) -> Result<GroupInfo, AppError> {

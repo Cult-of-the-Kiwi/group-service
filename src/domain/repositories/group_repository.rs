@@ -1,9 +1,6 @@
 use async_trait::async_trait;
 
-use crate::{
-    application::dto::{GroupInfo, MemberId},
-    infrastructure::error::InfraError,
-};
+use crate::{application::dto::GroupInfo, infrastructure::error::InfraError};
 
 // FIXME(Sa4dUs): check whether this should remain as an async trait or if we should take an
 // alternative aproach as desugaring `async fn` as `-> Future<...>` or using trait specialization
@@ -24,4 +21,6 @@ pub trait GroupRepository {
         group_id: uuid::Uuid,
         member_ids: Vec<uuid::Uuid>,
     ) -> Result<(), InfraError>;
+
+    async fn get_groups_by_user(&self, user_id: uuid::Uuid) -> Result<Vec<GroupInfo>, InfraError>;
 }
